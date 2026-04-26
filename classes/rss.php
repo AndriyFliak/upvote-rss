@@ -206,9 +206,9 @@ class RSS {
 			$item_node->appendChild($guid_link);
 
 			// Comments node
-			if (strpos($post->domain, "self.") == false) {
-				$item_node->appendChild($this->xml->createElement("comments", $permalink));
-			}
+			#if (strpos($post->domain, "self.") == false) {
+			#	$item_node->appendChild($this->xml->createElement("comments", $permalink));
+			#}
 
 			// Description node
 			$description_node     = $item_node->appendChild($this->xml->createElement("description"));
