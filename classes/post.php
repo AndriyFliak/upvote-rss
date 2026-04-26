@@ -46,7 +46,7 @@ abstract class Post {
   private ?string $summary = '';
   private ?string $separator_after_permalink = '';
   private ?string $separator_after_summary = '';
-  private ?string $separator_after_selftext = '';
+  private ?string $separator_after_media = '';
   private ?string $separator_before_parsed_content = '';
   private ?string $separator_before_comments = '';
   private ?array  $comments = [];
@@ -112,11 +112,11 @@ abstract class Post {
 	// Set Feed Link
   protected function setFeedLink() {
     $link = '';
-    if(!empty($this->url)) {
-      $link = cleanURL($this->url);
-    }
-    if (!$link && !empty($this->permalink)) {
+    if (!empty($this->permalink)) {
       $link = cleanURL($this->permalink) ?? '';
+    }
+    if(!$link && !empty($this->url)) {
+      $link = cleanURL($this->url);
     }
     $this->feed_Link = $link;
   }
@@ -147,8 +147,8 @@ abstract class Post {
     $this->getPreviewImage();
     $this->cleanSelftext();
     $this->getSeparators();
-    $description .= $this->getFeedItemMeta();
-    $description .= $this->separator_after_permalink;
+    #$description .= $this->getFeedItemMeta();
+    #$description .= $this->separator_after_permalink;
     if ($this->summary) {
       if (strpos($this->summary, "<p>") === 0) {
         $this->summary = "<p>Summary: " . substr($this->summary, 3);
@@ -158,16 +158,16 @@ abstract class Post {
       $description .= "<section class='summary'>$this->summary</section>";
     }
     $description .= $this->separator_after_summary;
-    if ($this->selftext_html) {
-      $description .= "<section class='selftext'>$this->selftext_html</section>";
-    }
-    $description .= $this->separator_after_selftext;
     if ($this->preview_image_html) {
-      $preview_image_spacing = $this->selftext_html ? "<p>&nbsp;</p>" : "";
-      $description .= "<section class='preview-image'>$preview_image_spacing$this->preview_image_html</section>";
+      $preview_image_spacing = $this->embedded_media_html ? "<p>&nbsp;</p>" : "";
+      $description .= "<section class='preview-image'>$this->preview_image_html$preview_image_spacing</section>";
     }
     if ($this->embedded_media_html) {
       $description .= "<section class='embedded-media'>$this->embedded_media_html</section>";
+    }
+    $description .= $this->separator_after_media;
+    if ($this->selftext_html) {
+      $description .= "<section class='selftext'>$this->selftext_html</section>";
     }
     $description .= $this->separator_before_parsed_content;
     if ($this->parsed_content) {
@@ -552,23 +552,22 @@ abstract class Post {
     }
     $this->separator_after_summary = $separator_after_summary;
     // Separator after selftext
-    $separator_after_selftext = '';
+    $separator_after_media = '';
     if (
       $this->selftext_html &&
-      !$this->preview_image_html &&
-      !$this->embedded_media_html &&
-      $this->parsed_content
+      ($this->preview_image_html ||
+      $this->embedded_media_html)
     ) {
-      $separator_after_selftext = "<section class='separator separator-after-selftext'>$separator</section>";
+      $separator_after_media = "<section class='separator separator-after-media'><p>&nbsp;</p></section>";
     }
-    $this->separator_after_selftext = $separator_after_selftext;
+    $this->separator_after_media = $separator_after_media;
     // Separator before parsed content
     $separator_before_parsed_content = '';
     if (
       !$separator_after_permalink &&
       !$separator_after_summary &&
       !$this->selftext_html &&
-      !$separator_after_selftext &&
+      !$separator_after_media &&
       !$this->preview_image_html &&
       !$this->embedded_media_html &&
       $this->parsed_content &&
